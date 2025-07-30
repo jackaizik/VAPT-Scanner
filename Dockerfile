@@ -21,4 +21,6 @@ RUN python3 -m venv venv && \
 EXPOSE 5000 8080
 
 # Explicitly start services within a shell
-CMD ["/bin/bash", "-c", "source venv/bin/activate && zaproxy -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true & python app.py"]
+CMD . venv/bin/activate && \
+    zaproxy -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true & \
+    venv/bin/python app.py
