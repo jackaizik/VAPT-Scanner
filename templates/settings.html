@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scanner Core Settings</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Core Scanner Settings</h1>
+    <form method="post">
+        <label>Nmap Arguments:</label>
+        <input type="text" name="nmap_args" value="-sV -Pn -T4" required><br><br>
+        
+        <label>ZAP API URL:</label>
+        <input type="text" name="zap_url" value="http://localhost:8080" required><br><br>
+        
+        <button type="submit">Save Settings</button>
+    </form>
+    <a href="{{ url_for('home') }}"><button>Back to Home</button></a>
+</body>
+</html>
