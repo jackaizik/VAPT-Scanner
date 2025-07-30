@@ -18,8 +18,12 @@
     <a href="{{ url_for('settings') }}"><button>Core Settings</button></a>
 
     {% if results %}
-    <h2>Scan Results:</h2>
-    <pre>{{ results }}</pre>
+        <h2>Scan Results:</h2>
+        {% if results.error %}
+            <div class="error">{{ results.error }}</div>
+        {% else %}
+            <pre style="white-space: pre-wrap; word-break: break-word;">{{ results|tojson(indent=2) }}</pre>
+        {% endif %}
     {% endif %}
 </body>
 </html>
