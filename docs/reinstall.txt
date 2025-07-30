@@ -1,0 +1,10 @@
+# Remove old container/image (optional, but recommended)
+docker stop $(docker ps -q --filter ancestor=vapt-scanner)
+docker rm $(docker ps -a -q --filter ancestor=vapt-scanner)
+docker rmi vapt-scanner
+
+# Rebuild Docker image with corrected Dockerfile
+docker build -t vapt-scanner .
+
+# Run the container again
+docker run -d -p 5000:5000 -p 8080:8080 vapt-scanner

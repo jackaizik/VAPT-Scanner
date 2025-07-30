@@ -1,4 +1,4 @@
-###### DEPLOYING DOCKER ON KALI VM ######
+###### DEPLOYING KALI VM ENVIRONMENT ######
 1.) SSH to the Kali VM:
 ssh kali@<VM_IP_ADDRESS>
 
