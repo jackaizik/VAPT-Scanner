@@ -1,6 +1,5 @@
 FROM kalilinux/kali-rolling
 
-# Install system dependencies
 RUN apt update && apt install -y \
     python3 \
     python3-pip \
@@ -13,15 +12,13 @@ RUN apt update && apt install -y \
 WORKDIR /app
 COPY . .
 
-# Set up a Python virtual environment and install dependencies
-RUN python3 -m venv venv \
-    && . venv/bin/activate \
-    && pip install --upgrade pip \
-    && pip install -r requirements.txt
+# Create and activate venv
+RUN python3 -m venv venv && \
+    . venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install -r requirements.txt
 
 EXPOSE 5000 8080
 
-# Activate virtual environment and start ZAP and Flask application
-CMD . venv/bin/activate && \
-    zaproxy -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true & \
-    python3 app.py
+# Explicitly start services within a shell
+CMD ["/bin/bash", "-c", "source venv/bin/activate && zaproxy -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true & python app.py"]
