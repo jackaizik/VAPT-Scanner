@@ -1,3 +1,6 @@
+VM IP: 9.234.160.172:5000
+ssh kali@9.234.160.172
+
 ###### DEPLOYING KALI VM ENVIRONMENT ######
 1.) SSH to the Kali VM:
 ssh kali@<VM_IP_ADDRESS>

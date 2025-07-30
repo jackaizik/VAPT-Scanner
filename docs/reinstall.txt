@@ -3,6 +3,10 @@ docker stop $(docker ps -q --filter ancestor=vapt-scanner)
 docker rm $(docker ps -a -q --filter ancestor=vapt-scanner)
 docker rmi vapt-scanner
 
+# Re-download the Project Repo
+git clone https://github.com/jackaizik/VAPT-Scanner.git VAPT-Scanner
+cd VAPT-Scanner
+
 # Rebuild Docker image with corrected Dockerfile
 docker build -t vapt-scanner .
 
