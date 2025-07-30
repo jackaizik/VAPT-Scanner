@@ -1,0 +1,37 @@
+VM IP: 9.234.160.172:5000
+ssh kali@9.234.160.172
+
+##### POC VM INSTALLATION #####
+# Update & upgrade packages
+sudo apt update && sudo apt upgrade -y
+
+# Install tools required (Nmap, OWASP ZAP, Python tools)
+sudo apt install -y nmap zaproxy python3 python3-pip python3-venv git
+
+# Clone your POC Project repository from GitHub (recommended)
+git clone <YOUR_GITHUB_REPO_URL>
+cd <YOUR_PROJECT_FOLDER>
+
+# Setup Python virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+Note:
+If you haven't uploaded your project yet, copy it manually via SCP or Git:
+
+Using SCP from local machine:
+scp -r path/to/local/VAPT-Scanner-MVP kali@<VM_PUBLIC_IP>:/home/kali/
+
+#######################################
+
+#1: Start OWASP ZAP API (headless mode)
+zaproxy -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true &
+
+#2: Run Flask App
+source venv/bin/activate
+python app.py
+
+Your Flask App will run at http://0.0.0.0:5000.
