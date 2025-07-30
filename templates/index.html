@@ -1,29 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>S3 VAPT Scanner</title>
+    <title>VAPT Modular Scanner</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>VAPT Scanner MVP Interface</h1>
-    <form action="/scan" method="post">
-        <input type="text" name="target" placeholder="Enter target IP or URL" required>
-        <select name="scan_type">
-            <option value="nmap">Nmap Scan</option>
-            <option value="zap">OWASP ZAP Scan</option>
-        </select>
-        <button type="submit">Start Scan</button>
-    </form>
+    <div class="console-container">
+        <h1>VAPT Modular Security Scanner</h1>
+        <form id="scan-form">
+            <input type="text" name="target" id="target" placeholder="Target (e.g., 192.168.1.1 or http://testsite.com)" required>
+            <div class="modules">
+                <label><input type="checkbox" name="scan_type" value="nmap" checked> Nmap Scan</label>
+                <label><input type="checkbox" name="scan_type" value="zap"> OWASP ZAP Scan</label>
+                <!-- Add more scanners here as needed -->
+            </div>
+            <button type="submit">Run Scan</button>
+        </form>
+        <div id="output-area">
+            <div id="scan-status" class="console-output"></div>
+        </div>
+        <footer>
+            <span>Next: Add more modules + AI-powered analysis</span>
+        </footer>
+    </div>
+    <script>
+    document.getElementById('scan-form').onsubmit = async function(e){
+        e.preventDefault();
+        let output = document.getElementById('scan-status');
+        output.innerHTML = '';
+        let target = document.getElementById('target').value;
+        let scanTypes = Array.from(document.querySelectorAll('input[name="scan_type"]:checked')).map(cb => cb.value);
 
-    <a href="{{ url_for('settings') }}"><button>Core Settings</button></a>
+        // Run all selected scanners in parallel
+        for (let scanType of scanTypes) {
+            output.innerHTML += `<div class="module-header">${scanType.toUpperCase()} Scan Started...</div>`;
+            fetch('/scan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({scan_type: scanType, target: target})
+            }).then(r => r.json()).then(result => {
+                let moduleBlock = `<div class="module-result"><pre>${formatScanResult(result, scanType)}</pre></div>`;
+                output.innerHTML += moduleBlock;
+            }).catch(e => {
+                output.innerHTML += `<div class="error-msg">Error running ${scanType}: ${e}</div>`;
+            });
+        }
+    }
 
-    {% if results %}
-        <h2>Scan Results:</h2>
-        {% if results.error %}
-            <div class="error">{{ results.error }}</div>
-        {% else %}
-            <pre style="white-space: pre-wrap; word-break: break-word;">{{ results|tojson(indent=2) }}</pre>
-        {% endif %}
-    {% endif %}
+    function formatScanResult(result, scanType) {
+        if (result.error) return `[ERROR] ${result.error}`;
+        if (scanType === "nmap") {
+            let out = "";
+            if (result.results) {
+                result.results.forEach(host => {
+                    out += `\n[${host.host}] (${host.status})\n`;
+                    host.open_ports.forEach(p =>
+                        out += `   [${p.port}] ${p.service} ${p.version}\n`);
+                });
+            }
+            return out || "[No hosts found]";
+        }
+        if (scanType === "zap") {
+            if (!result.results || !result.results.alerts) return "[No alerts found]";
+            let out = "";
+            result.results.alerts.forEach(alert =>
+                out += `[${alert.risk}] ${alert.alert} (${alert.cweid ? "CWE-" + alert.cweid : "No CWE"})\n   URL: ${alert.url}\n   Evidence: ${alert.evidence || "N/A"}\n`
+            );
+            return out || "[No alerts found]";
+        }
+        return JSON.stringify(result, null, 2);
+    }
+    </script>
 </body>
 </html>
