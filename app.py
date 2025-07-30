@@ -8,6 +8,12 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
+@app.route('/scan', methods=['POST'])
+def scan():
+    data = request.get_json()
+    scan_type = data.get('scan_type')
+    target = data.get('target')
+
 @app.route('/scan/nmap', methods=['POST'])
 def nmap_scan():
     target = request.form.get('target')
