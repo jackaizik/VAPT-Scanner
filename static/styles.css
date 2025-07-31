@@ -102,3 +102,51 @@ footer {
     margin-top: 2.5em;
     opacity: 0.7;
 }
+
+.output-area {
+    display: flex;
+    gap: 2em;
+    flex-wrap: wrap;
+    margin-top: 2em;
+    justify-content: space-between;
+}
+.scanner-console {
+    background: #191b1e;
+    border-radius: 7px;
+    box-shadow: 0 2px 14px #2228;
+    flex: 1 1 330px;
+    min-width: 290px;
+    max-width: 390px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2em;
+    margin-right: 0;
+    margin-left: 0;
+}
+.console-title {
+    font-weight: bold;
+    background: #252a2f;
+    color: #8aff95;
+    padding: 0.6em 1em;
+    border-radius: 7px 7px 0 0;
+    font-size: 1.08em;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #2a2f34;
+}
+.console-body {
+    padding: 1.1em 1.1em;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    font-size: 1.03em;
+    color: #d6e9f3;
+    background: #181d21;
+    border-radius: 0 0 7px 7px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 340px;
+    overflow-y: auto;
+    min-height: 90px;
+}
+@media (max-width: 900px) {
+    .output-area { flex-direction: column; gap: 0.5em; }
+    .scanner-console { max-width: 100%; min-width: 220px; }
+}

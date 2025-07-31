@@ -16,60 +16,70 @@
             </div>
             <button type="submit">Run Scan</button>
         </form>
-        <div id="output-area">
-            <div id="scan-status" class="console-output"></div>
+        <div id="output-area" class="output-area">
+            <div class="scanner-console" id="nmap-console">
+                <div class="console-title">NMAP Output</div>
+                <div class="console-body" id="nmap-output"></div>
+            </div>
+            <div class="scanner-console" id="zap-console">
+                <div class="console-title">OWASP ZAP Output</div>
+                <div class="console-body" id="zap-output"></div>
+            </div>
+            <!-- Add more scanner consoles here as you expand modules -->
         </div>
-        <footer>
-            <span>Next: Add more modules + AI-powered analysis</span>
-        </footer>
-    </div>
-    <script>
-    document.getElementById('scan-form').onsubmit = async function(e){
-        e.preventDefault();
-        let output = document.getElementById('scan-status');
-        output.innerHTML = '';
-        let target = document.getElementById('target').value;
-        let scanTypes = Array.from(document.querySelectorAll('input[name="scan_type"]:checked')).map(cb => cb.value);
-
-        // Run all selected scanners in parallel
-        for (let scanType of scanTypes) {
-            output.innerHTML += `<div class="module-header">${scanType.toUpperCase()} Scan Started...</div>`;
-            fetch('/scan', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({scan_type: scanType, target: target})
-            }).then(r => r.json()).then(result => {
-                let moduleBlock = `<div class="module-result"><pre>${formatScanResult(result, scanType)}</pre></div>`;
-                output.innerHTML += moduleBlock;
-            }).catch(e => {
-                output.innerHTML += `<div class="error-msg">Error running ${scanType}: ${e}</div>`;
-            });
-        }
-    }
-
-    function formatScanResult(result, scanType) {
-        if (result.error) return `[ERROR] ${result.error}`;
-        if (scanType === "nmap") {
-            let out = "";
-            if (result.results) {
-                result.results.forEach(host => {
-                    out += `\n[${host.host}] (${host.status})\n`;
-                    host.open_ports.forEach(p =>
-                        out += `   [${p.port}] ${p.service} ${p.version}\n`);
+        
+        <script>
+        document.getElementById('scan-form').onsubmit = async function(e){
+            e.preventDefault();
+            // Clear previous outputs
+            document.getElementById('nmap-output').innerText = '';
+            document.getElementById('zap-output').innerText = '';
+            // Collect targets/modules
+            let target = document.getElementById('target').value;
+            let scanTypes = Array.from(document.querySelectorAll('input[name="scan_type"]:checked')).map(cb => cb.value);
+        
+            // Run all selected scanners in parallel
+            for (let scanType of scanTypes) {
+                let outputDiv = document.getElementById(scanType + '-output');
+                outputDiv.innerText = 'Scan started...';
+                fetch('/scan', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({scan_type: scanType, target: target})
+                })
+                .then(r => r.json())
+                .then(result => {
+                    outputDiv.innerText = formatScanResult(result, scanType);
+                })
+                .catch(e => {
+                    outputDiv.innerText = `Error: ${e}`;
                 });
             }
-            return out || "[No hosts found]";
         }
-        if (scanType === "zap") {
-            if (!result.results || !result.results.alerts) return "[No alerts found]";
-            let out = "";
-            result.results.alerts.forEach(alert =>
-                out += `[${alert.risk}] ${alert.alert} (${alert.cweid ? "CWE-" + alert.cweid : "No CWE"})\n   URL: ${alert.url}\n   Evidence: ${alert.evidence || "N/A"}\n`
-            );
-            return out || "[No alerts found]";
+        
+        function formatScanResult(result, scanType) {
+            if (result.error) return `[ERROR] ${result.error}`;
+            if (scanType === "nmap") {
+                let out = "";
+                if (result.results) {
+                    result.results.forEach(host => {
+                        out += `\n[${host.host}] (${host.status})\n`;
+                        host.open_ports.forEach(p =>
+                            out += `   [${p.port}] ${p.service} ${p.version}\n`);
+                    });
+                }
+                return out || "[No hosts found]";
+            }
+            if (scanType === "zap") {
+                if (!result.results || !result.results.alerts) return "[No alerts found]";
+                let out = "";
+                result.results.alerts.forEach(alert =>
+                    out += `[${alert.risk}] ${alert.alert} (${alert.cweid ? "CWE-" + alert.cweid : "No CWE"})\n   URL: ${alert.url}\n   Evidence: ${alert.evidence || "N/A"}\n`
+                );
+                return out || "[No alerts found]";
+            }
+            return JSON.stringify(result, null, 2);
         }
-        return JSON.stringify(result, null, 2);
-    }
-    </script>
+        </script>        
 </body>
 </html>
