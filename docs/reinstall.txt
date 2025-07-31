@@ -16,3 +16,16 @@ docker build -t vapt-scanner .
 
 # Run the container again
 docker run -d -p 5000:5000 -p 8080:8080 vapt-scanner
+
+================================
+
+docker stop $(docker ps -q --filter ancestor=vapt-scanner)
+docker rm $(docker ps -a -q --filter ancestor=vapt-scanner)
+docker rmi vapt-scanner
+cd ..
+rm -r VAPT-Scanner
+
+git clone https://github.com/jackaizik/VAPT-Scanner.git VAPT-Scanner
+cd VAPT-Scanner
+docker build -t vapt-scanner .
+docker run -d -p 5000:5000 -p 8080:8080 vapt-scanner

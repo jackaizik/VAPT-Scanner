@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from scanners.nmap_scanner import run_nmap_scan
 from scanners.zap_scanner import run_zap_scan
 
@@ -10,21 +10,19 @@ def home():
 
 @app.route('/scan', methods=['POST'])
 def scan():
-    data = request.get_json()
-    scan_type = data.get('scan_type')
-    target = data.get('target')
-
-@app.route('/scan/nmap', methods=['POST'])
-def nmap_scan():
-    target = request.form.get('target')
-    results = run_nmap_scan(target)
-    return render_template('index.html', result=results)
-
-@app.route('/scan/zap', methods=['POST'])
-def zap_scan():
-    target = request.form.get('target')
-    results = run_zap_scan(target)
-    return render_template('index.html', result=results)
+    try:
+        data = request.get_json(force=True)
+        scan_type = data.get('scan_type')
+        target = data.get('target')
+        if scan_type == 'nmap':
+            results = run_nmap_scan(target)
+        elif scan_type == 'zap':
+            results = run_zap_scan(target)
+        else:
+            results = {"error": "Invalid scan type"}
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
