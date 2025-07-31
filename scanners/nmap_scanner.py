@@ -1,9 +1,11 @@
 import nmap
 
-def run_nmap_scan(target):
+def run_nmap_scan(target, scan_args=None):
     scanner = nmap.PortScanner()
-    scanner.scan(hosts=target, arguments='-sV -Pn -T4')
-    
+    args = scan_args.get('args', '-sV -Pn -T4') if scan_args else '-sV -Pn -T4'
+    timeout = int(scan_args.get('timeout', 60)) if scan_args else 60
+    # Note: python-nmap doesn't support timeout directly, so you may want to run with subprocess for real timeouts.
+    scanner.scan(hosts=target, arguments=args)
     results = []
     for host in scanner.all_hosts():
         host_info = {
