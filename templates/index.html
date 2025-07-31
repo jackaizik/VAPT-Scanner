@@ -12,8 +12,11 @@
             <div class="modules">
                 <label><input type="checkbox" name="scan_type" value="nmap" checked> Nmap Scan</label>
                 <label><input type="checkbox" name="scan_type" value="zap"> OWASP ZAP Scan</label>
-                <!-- Add more scanners here as needed -->
-            </div>
+                <label><input type="checkbox" name="scan_type" value="nuclei"> Nuclei Scan</label>
+                <label><input type="checkbox" name="scan_type" value="nikto"> Nikto Scan</label>
+                <label><input type="checkbox" name="scan_type" value="amass"> Amass Enum</label>
+                <!-- ADD MORE MODULES-->
+            </div>            
             <button type="submit">Run Scan</button>
         </form>
         <div id="output-area" class="output-area">
@@ -25,6 +28,18 @@
                 <div class="console-title">OWASP ZAP Output</div>
                 <div class="console-body" id="zap-output"></div>
             </div>
+            <div class="scanner-console" id="nuclei-console">
+                <div class="console-title">Nuclei Output</div>
+                <div class="console-body" id="nuclei-output"></div>
+            </div>
+            <div class="scanner-console" id="nikto-console">
+                <div class="console-title">Nikto Output</div>
+                <div class="console-body" id="nikto-output"></div>
+            </div>
+            <div class="scanner-console" id="amass-console">
+                <div class="console-title">Amass Output</div>
+                <div class="console-body" id="amass-output"></div>
+            </div>            
             <!-- Add more scanner consoles here as you expand modules -->
         </div>
         
@@ -34,6 +49,10 @@
             // Clear previous outputs
             document.getElementById('nmap-output').innerText = '';
             document.getElementById('zap-output').innerText = '';
+            document.getElementById('nuclei-output').innerText = '';
+            document.getElementById('nikto-output').innerText = '';
+            document.getElementById('amass-output').innerText = '';
+
             // Collect targets/modules
             let target = document.getElementById('target').value;
             let scanTypes = Array.from(document.querySelectorAll('input[name="scan_type"]:checked')).map(cb => cb.value);
@@ -77,6 +96,20 @@
                     out += `[${alert.risk}] ${alert.alert} (${alert.cweid ? "CWE-" + alert.cweid : "No CWE"})\n   URL: ${alert.url}\n   Evidence: ${alert.evidence || "N/A"}\n`
                 );
                 return out || "[No alerts found]";
+            }
+            if (scanType === "nuclei") {
+                if (!result.results || !result.results.length) return "[No findings]";
+                let out = "";
+                result.results.forEach(r => {
+                    out += `[${r.templateID}] [${r.severity}] ${r.info ? r.info.name : ''}\nURL: ${r.host || r.url}\n\n`;
+                });
+                return out;
+            }
+            if (scanType === "nikto") {
+                return result.results || "[No findings]";
+            }
+            if (scanType === "amass") {
+                return result.results ? result.results.join("\n") : "[No subdomains found]";
             }
             return JSON.stringify(result, null, 2);
         }

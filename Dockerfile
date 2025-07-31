@@ -6,6 +6,9 @@ RUN apt update && apt install -y \
     python3-venv \
     nmap \
     zaproxy \
+    nuclei \
+    nikto \
+    amass \
     git \
     && apt clean
 
