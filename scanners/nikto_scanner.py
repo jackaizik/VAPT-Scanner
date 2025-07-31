@@ -1,6 +1,6 @@
 import subprocess
 
-def run_nikto_scan(target, scan_args=None):
+def run_nikto_scan(target, scan_args):
     if not target.startswith(('http://', 'https://')):
         target = 'http://' + target
     timeout = int(scan_args.get('timeout', 180)) if scan_args else 180

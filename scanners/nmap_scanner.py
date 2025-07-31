@@ -1,6 +1,6 @@
 import nmap
 
-def run_nmap_scan(target, scan_args=None):
+def run_nmap_scan(target, scan_args):
     scanner = nmap.PortScanner()
     args = scan_args.get('args', '-sV -Pn -T4') if scan_args else '-sV -Pn -T4'
     timeout = int(scan_args.get('timeout', 60)) if scan_args else 60

@@ -1,6 +1,6 @@
 import subprocess
 
-def run_amass_scan(target, scan_args=None):
+def run_amass_scan(target, scan_args):
     if target.startswith('http://') or target.startswith('https://'):
         target = target.split("://")[1]
     timeout = int(scan_args.get('timeout', 180)) if scan_args else 180

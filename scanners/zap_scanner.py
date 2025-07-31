@@ -1,6 +1,6 @@
 import requests, time
 
-def run_zap_scan(target, scan_args=None):
+def run_zap_scan(target, scan_args):
     zap_api = 'http://localhost:8080'
     timeout = int(scan_args.get('timeout', 180)) if scan_args else 180
     if not target.startswith(('http://', 'https://')):

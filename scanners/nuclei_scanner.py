@@ -1,6 +1,6 @@
 import subprocess, json
 
-def run_nuclei_scan(target, scan_args=None):
+def run_nuclei_scan(target, scan_args):
     nuclei_args = scan_args.get('args', '') if scan_args else ''
     timeout = int(scan_args.get('timeout', 120)) if scan_args else 120
     cmd = ["nuclei", "-u", target, "-json"]

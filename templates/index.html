@@ -8,7 +8,7 @@
     <div class="console-container">
         <h1>VAPT Modular Security Scanner</h1>
         <form id="scan-form">
-            <input type="text" name="target" id="target" placeholder="Target (e.g., 192.168.1.1 or http://testsite.com)" required>
+            <input type="text" name="target" id="target" placeholder="Target (e.g., 192.168.1.1 or http://testsite.com)" required style="min-width:320px;">
             <div class="modules">
                 <label><input type="checkbox" name="scan_type" value="nmap" checked> Nmap Scan</label>
                 <label><input type="checkbox" name="scan_type" value="zap"> OWASP ZAP Scan</label>
@@ -19,6 +19,53 @@
             </div>            
             <button type="submit">Run Scan</button>
         </form>
+        <button type="button" id="open-config-btn" style="margin-left:1em;margin-bottom:1em;">Configure Scanners</button>
+        <div id="config-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="close-config">&times;</span>
+                <h2>Scanner Configuration</h2>
+                <form id="config-form">
+                    <div class="config-section" id="nmap-settings">
+                        <h3>Nmap</h3>
+                        <label>Arguments:
+                            <input type="text" name="nmap_args" id="nmap_args" value="-sV -Pn -T4">
+                        </label>
+                        <label>Timeout (seconds):
+                            <input type="number" min="1" name="nmap_timeout" id="nmap_timeout" value="60">
+                        </label>
+                    </div>
+                    <div class="config-section" id="zap-settings">
+                        <h3>OWASP ZAP</h3>
+                        <label>Timeout (seconds):
+                            <input type="number" min="10" name="zap_timeout" id="zap_timeout" value="180">
+                        </label>
+                    </div>
+                    <div class="config-section" id="nuclei-settings">
+                        <h3>Nuclei</h3>
+                        <label>Arguments:
+                            <input type="text" name="nuclei_args" id="nuclei_args" value="">
+                        </label>
+                        <label>Timeout (seconds):
+                            <input type="number" min="10" name="nuclei_timeout" id="nuclei_timeout" value="120">
+                        </label>
+                    </div>
+                    <div class="config-section" id="nikto-settings">
+                        <h3>Nikto</h3>
+                        <label>Timeout (seconds):
+                            <input type="number" min="10" name="nikto_timeout" id="nikto_timeout" value="180">
+                        </label>
+                    </div>
+                    <div class="config-section" id="amass-settings">
+                        <h3>Amass</h3>
+                        <label>Timeout (seconds):
+                            <input type="number" min="10" name="amass_timeout" id="amass_timeout" value="180">
+                        </label>
+                    </div>
+                    <button type="button" id="save-config-btn" style="margin-top:0.8em;">Save Settings</button>
+                </form>
+            </div>
+        </div>
+
         <div id="output-area" class="output-area">
             <div class="scanner-console" id="nmap-console">
                 <div class="console-title">NMAP Output</div>
@@ -113,6 +160,58 @@
             }
             return JSON.stringify(result, null, 2);
         }
-        </script>        
+        </script>
+        <script>
+            function fetchConfigAndFill() {
+                fetch('/load_config')
+                .then(r => r.json())
+                .then(cfg => {
+                    document.getElementById('nmap_args').value   = cfg.nmap.args;
+                    document.getElementById('nmap_timeout').value = cfg.nmap.timeout;
+                    document.getElementById('zap_timeout').value   = cfg.zap.timeout;
+                    document.getElementById('nuclei_args').value = cfg.nuclei.args;
+                    document.getElementById('nuclei_timeout').value = cfg.nuclei.timeout;
+                    document.getElementById('nikto_timeout').value = cfg.nikto.timeout;
+                    document.getElementById('amass_timeout').value = cfg.amass.timeout;
+                });
+            }
+            function collectConfigFromFields() {
+                return {
+                    nmap:   { args: document.getElementById('nmap_args').value, timeout: parseInt(document.getElementById('nmap_timeout').value) },
+                    zap:    { timeout: parseInt(document.getElementById('zap_timeout').value) },
+                    nuclei: { args: document.getElementById('nuclei_args').value, timeout: parseInt(document.getElementById('nuclei_timeout').value) },
+                    nikto:  { timeout: parseInt(document.getElementById('nikto_timeout').value) },
+                    amass:  { timeout: parseInt(document.getElementById('amass_timeout').value) }
+                };
+            }
+            
+            document.getElementById('open-config-btn').onclick = function() {
+                fetchConfigAndFill();
+                document.getElementById('config-modal').style.display = 'block';
+            };
+            document.getElementById('close-config').onclick = function() {
+                document.getElementById('config-modal').style.display = 'none';
+            };
+            document.getElementById('save-config-btn').onclick = function(e) {
+                e.preventDefault();
+                const config = collectConfigFromFields();
+                fetch('/save_config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                }).then(r => r.json())
+                  .then(resp => {
+                    document.getElementById('config-modal').style.display = 'none';
+                    // Optional: show toast message "Settings saved!"
+                  });
+            };
+            window.onclick = function(event) {
+                if (event.target == document.getElementById('config-modal')) {
+                    document.getElementById('config-modal').style.display = "none";
+                }
+            };
+            // On page load, fill config fields for user convenience
+            document.addEventListener('DOMContentLoaded', fetchConfigAndFill);
+        </script>            
 </body>
 </html>
