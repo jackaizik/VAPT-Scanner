@@ -17,6 +17,9 @@ docker build -t vapt-scanner .
 # Run the container again
 docker run -d -p 5000:5000 -p 8080:8080 vapt-scanner
 
+# RESTART CONTAINER (if needed)
+docker restart $(docker ps -a -q)
+
 ================================
 
 docker stop $(docker ps -q --filter ancestor=vapt-scanner)

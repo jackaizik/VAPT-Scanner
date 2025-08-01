@@ -3,215 +3,442 @@
 <head>
     <title>VAPT Modular Scanner</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body {
+            background: #181d21;
+            color: #d6e9f3;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+        }
+        .console-container {
+            max-width: 1050px;
+            margin: 2.5em auto 2em auto;
+            background: #23272c;
+            border-radius: 10px;
+            box-shadow: 0 6px 32px #2227;
+            padding: 2em 2.5em 1.5em 2.5em;
+        }
+        form {
+            margin-bottom: 1.2em;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5em;
+            align-items: center;
+            justify-content: center;
+        }
+        input[type="text"] {
+            padding: 0.5em;
+            border: none;
+            border-radius: 3px;
+            min-width: 330px;
+            max-width: 500px;
+            background: #292f35;
+            color: #b4f1fc;
+        }
+        button, .console-tools button {
+            background: #36be79;
+            color: #202223;
+            border: none;
+            border-radius: 4px;
+            padding: 0.6em 1.1em;
+            font-weight: bold;
+            font-size: 1em;
+            margin-right: 0.7em;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        button:hover, .console-tools button:hover {
+            background: #47e1ab;
+        }
+        .modules {
+            margin-left: 2em;
+        }
+        label {
+            font-size: 1.04em;
+            margin-right: 2em;
+            color: #e6f7ff;
+        }
+        .output-area {
+            display: flex;
+            gap: 2em;
+            flex-wrap: wrap;
+            margin-top: 2em;
+            justify-content: space-between;
+        }
+        .scanner-console {
+            background: #191b1e;
+            border-radius: 7px;
+            box-shadow: 0 2px 14px #2228;
+            flex: 1 1 330px;
+            min-width: 300px;
+            max-width: 395px;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 2em;
+            margin-right: 0;
+            margin-left: 0;
+        }
+        .console-title {
+            font-weight: bold;
+            background: #252a2f;
+            color: #8aff95;
+            padding: 0.6em 1em;
+            border-radius: 7px 7px 0 0;
+            font-size: 1.08em;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #2a2f34;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .console-body {
+            padding: 1.1em 1.1em;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 1.03em;
+            color: #d6e9f3;
+            background: #181d21;
+            border-radius: 0 0 7px 7px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 340px;
+            overflow-y: auto;
+            min-height: 90px;
+        }
+        .console-tools button {
+            background: #222e3b;
+            color: #9efc90;
+            font-size: 0.96em;
+            border-radius: 3px;
+            margin: 0 0 0 0.3em;
+            padding: 0.38em 0.7em;
+        }
+        .console-tools button:hover {
+            background: #232;
+            color: #fffaaf;
+        }
+        @media (max-width: 1200px) {
+            .output-area { flex-direction: column; gap: 0.5em; }
+            .scanner-console { max-width: 100%; min-width: 220px; }
+        }
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 99;
+            left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background: rgba(0,0,0,0.65);
+        }
+        .modal-content {
+            background: #23272c;
+            margin: 7vh auto; padding: 2.5em 2.5em 1em 2.5em;
+            border: 1px solid #191b1e;
+            border-radius: 13px;
+            max-width: 600px;
+            color: #d6e9f3;
+            position: relative;
+            box-shadow: 0 8px 40px #000a;
+        }
+        .close {
+            position: absolute; right: 20px; top: 10px;
+            color: #8ac7ff;
+            font-size: 2.1em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover { color: #ffa6a6; }
+        .config-section { margin-bottom: 1.8em; }
+        .config-section h3 {
+            margin-bottom: 0.7em;
+            color: #8aff95;
+            letter-spacing: 0.5px;
+            margin-top: 1.2em;
+        }
+        .description-tip {
+            color: #a8d3ff;
+            display: block;
+            font-size: 0.99em;
+            margin-bottom: 0.12em;
+            margin-left: 0.25em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.9em;
+            color: #e6f7ff;
+            font-size: 1.04em;
+        }
+        input[type="number"], input[type="text"] {
+            padding: 0.4em;
+            border-radius: 3px;
+            border: none;
+            margin-left: 7px;
+            width: 180px;
+            background: #292f35;
+            color: #b4f1fc;
+        }
+        select, option {
+            background: #292f35;
+            color: #b4f1fc;
+        }
+        #save-config-btn {
+            margin-top: 1em;
+            background: #36be79;
+            color: #202223;
+            border: none;
+            border-radius: 4px;
+            padding: 0.7em 1.4em;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        #save-config-btn:hover {
+            background: #47e1ab;
+        }
+    </style>
 </head>
 <body>
-    <div class="console-container">
-        <h1>VAPT Modular Security Scanner</h1>
-        <form id="scan-form">
-            <input type="text" name="target" id="target" placeholder="Target (e.g., 192.168.1.1 or http://testsite.com)" required style="min-width:320px;">
-            <div class="modules">
-                <label><input type="checkbox" name="scan_type" value="nmap" checked> Nmap Scan</label>
-                <label><input type="checkbox" name="scan_type" value="zap"> OWASP ZAP Scan</label>
-                <label><input type="checkbox" name="scan_type" value="nuclei"> Nuclei Scan</label>
-                <label><input type="checkbox" name="scan_type" value="nikto"> Nikto Scan</label>
-                <label><input type="checkbox" name="scan_type" value="amass"> Amass Enum</label>
-                <!-- ADD MORE MODULES-->
-            </div>            
-            <button type="submit">Run Scan</button>
-        </form>
-        <button type="button" id="open-config-btn" style="margin-left:1em;margin-bottom:1em;">Configure Scanners</button>
-        <div id="config-modal" class="modal">
-            <div class="modal-content">
-                <span class="close" id="close-config">&times;</span>
-                <h2>Scanner Configuration</h2>
-                <form id="config-form">
-                    <div class="config-section" id="nmap-settings">
-                        <h3>Nmap</h3>
-                        <label>Arguments:
-                            <input type="text" name="nmap_args" id="nmap_args" value="-sV -Pn -T4">
-                        </label>
-                        <label>Timeout (seconds):
-                            <input type="number" min="1" name="nmap_timeout" id="nmap_timeout" value="60">
-                        </label>
-                    </div>
-                    <div class="config-section" id="zap-settings">
-                        <h3>OWASP ZAP</h3>
-                        <label>Timeout (seconds):
-                            <input type="number" min="10" name="zap_timeout" id="zap_timeout" value="180">
-                        </label>
-                    </div>
-                    <div class="config-section" id="nuclei-settings">
-                        <h3>Nuclei</h3>
-                        <label>Arguments:
-                            <input type="text" name="nuclei_args" id="nuclei_args" value="">
-                        </label>
-                        <label>Timeout (seconds):
-                            <input type="number" min="10" name="nuclei_timeout" id="nuclei_timeout" value="120">
-                        </label>
-                    </div>
-                    <div class="config-section" id="nikto-settings">
-                        <h3>Nikto</h3>
-                        <label>Timeout (seconds):
-                            <input type="number" min="10" name="nikto_timeout" id="nikto_timeout" value="180">
-                        </label>
-                    </div>
-                    <div class="config-section" id="amass-settings">
-                        <h3>Amass</h3>
-                        <label>Timeout (seconds):
-                            <input type="number" min="10" name="amass_timeout" id="amass_timeout" value="180">
-                        </label>
-                    </div>
-                    <button type="button" id="save-config-btn" style="margin-top:0.8em;">Save Settings</button>
-                </form>
-            </div>
+<div class="console-container">
+    <h1>VAPT Modular Security Scanner</h1>
+    <form id="scan-form">
+        <input type="text" name="target" id="target" placeholder="Target (e.g., 192.168.1.1 or http://testsite.com)" required>
+        <div class="modules">
+            <label><input type="checkbox" name="scan_type" value="nmap" checked> Nmap</label>
+            <label><input type="checkbox" name="scan_type" value="zap"> ZAP</label>
+            <label><input type="checkbox" name="scan_type" value="nuclei"> Nuclei</label>
+            <label><input type="checkbox" name="scan_type" value="nikto"> Nikto</label>
+            <label><input type="checkbox" name="scan_type" value="amass"> Amass</label>
         </div>
+        <button type="submit">Run Scan</button>
+        <button type="button" id="open-config-btn" style="margin-left:1em;">Configure Scanners</button>
+    </form>
 
-        <div id="output-area" class="output-area">
-            <div class="scanner-console" id="nmap-console">
-                <div class="console-title">NMAP Output</div>
-                <div class="console-body" id="nmap-output"></div>
+    <div id="output-area" class="output-area">
+        <div class="scanner-console" id="nmap-console">
+            <div class="console-title">NMAP Output
+                <span class="console-tools">
+                    <button onclick="stopScan('nmap')">Stop</button>
+                    <button onclick="clearConsole('nmap')">Clear</button>
+                    <button onclick="copyConsole('nmap')">Copy</button>
+                </span>
             </div>
-            <div class="scanner-console" id="zap-console">
-                <div class="console-title">OWASP ZAP Output</div>
-                <div class="console-body" id="zap-output"></div>
-            </div>
-            <div class="scanner-console" id="nuclei-console">
-                <div class="console-title">Nuclei Output</div>
-                <div class="console-body" id="nuclei-output"></div>
-            </div>
-            <div class="scanner-console" id="nikto-console">
-                <div class="console-title">Nikto Output</div>
-                <div class="console-body" id="nikto-output"></div>
-            </div>
-            <div class="scanner-console" id="amass-console">
-                <div class="console-title">Amass Output</div>
-                <div class="console-body" id="amass-output"></div>
-            </div>            
-            <!-- Add more scanner consoles here as you expand modules -->
+            <div class="console-body" id="nmap-output"></div>
         </div>
-        
-        <script>
-        document.getElementById('scan-form').onsubmit = async function(e){
-            e.preventDefault();
-            // Clear previous outputs
-            document.getElementById('nmap-output').innerText = '';
-            document.getElementById('zap-output').innerText = '';
-            document.getElementById('nuclei-output').innerText = '';
-            document.getElementById('nikto-output').innerText = '';
-            document.getElementById('amass-output').innerText = '';
+        <div class="scanner-console" id="zap-console">
+            <div class="console-title">ZAP Output
+                <span class="console-tools">
+                    <button onclick="stopScan('zap')">Stop</button>
+                    <button onclick="clearConsole('zap')">Clear</button>
+                    <button onclick="copyConsole('zap')">Copy</button>
+                </span>
+            </div>
+            <div class="console-body" id="zap-output"></div>
+        </div>
+        <div class="scanner-console" id="nuclei-console">
+            <div class="console-title">Nuclei Output
+                <span class="console-tools">
+                    <button onclick="stopScan('nuclei')">Stop</button>
+                    <button onclick="clearConsole('nuclei')">Clear</button>
+                    <button onclick="copyConsole('nuclei')">Copy</button>
+                </span>
+            </div>
+            <div class="console-body" id="nuclei-output"></div>
+        </div>
+        <div class="scanner-console" id="nikto-console">
+            <div class="console-title">Nikto Output
+                <span class="console-tools">
+                    <button onclick="stopScan('nikto')">Stop</button>
+                    <button onclick="clearConsole('nikto')">Clear</button>
+                    <button onclick="copyConsole('nikto')">Copy</button>
+                </span>
+            </div>
+            <div class="console-body" id="nikto-output"></div>
+        </div>
+        <div class="scanner-console" id="amass-console">
+            <div class="console-title">Amass Output
+                <span class="console-tools">
+                    <button onclick="stopScan('amass')">Stop</button>
+                    <button onclick="clearConsole('amass')">Clear</button>
+                    <button onclick="copyConsole('amass')">Copy</button>
+                </span>
+            </div>
+            <div class="console-body" id="amass-output"></div>
+        </div>
+    </div>
+</div>
 
-            // Collect targets/modules
-            let target = document.getElementById('target').value;
-            let scanTypes = Array.from(document.querySelectorAll('input[name="scan_type"]:checked')).map(cb => cb.value);
-        
-            // Run all selected scanners in parallel
-            for (let scanType of scanTypes) {
-                let outputDiv = document.getElementById(scanType + '-output');
-                outputDiv.innerText = 'Scan started...';
-                fetch('/scan', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({scan_type: scanType, target: target})
-                })
-                .then(r => r.json())
-                .then(result => {
-                    outputDiv.innerText = formatScanResult(result, scanType);
-                })
-                .catch(e => {
-                    outputDiv.innerText = `Error: ${e}`;
-                });
+<!-- Modal -->
+<div id="config-modal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="close-config">&times;</span>
+    <h2>Scanner Configuration</h2>
+    <form id="config-form"></form>
+    <button type="button" id="save-config-btn" style="margin-top:0.8em;">Save Settings</button>
+  </div>
+</div>
+
+<script>
+let configCache = {};  // for storing latest loaded config
+
+document.getElementById('scan-form').onsubmit = function(e){
+    e.preventDefault();
+    let target = document.getElementById('target').value;
+    let scanTypes = Array.from(document.querySelectorAll('input[name="scan_type"]:checked')).map(cb => cb.value);
+    // Clear previous outputs
+    for (let st of scanTypes) clearConsole(st);
+
+    for (let scanType of scanTypes) {
+        document.getElementById(scanType + '-output').innerText = 'Scan started...';
+        fetch('/scan', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({scan_type: scanType, target: target})
+        });
+        pollStatus(scanType);
+    }
+};
+
+function pollStatus(scanner) {
+    fetch('/scan_status/' + scanner)
+    .then(r => r.json())
+    .then(result => {
+        if (result.status === "running") {
+            setTimeout(() => pollStatus(scanner), 1500);
+        } else {
+            document.getElementById(scanner + '-output').innerText = formatScanResult(result, scanner);
+        }
+    });
+}
+
+function clearConsole(scanner) {
+    document.getElementById(scanner + '-output').innerText = '';
+}
+function copyConsole(scanner) {
+    const text = document.getElementById(scanner + '-output').innerText;
+    navigator.clipboard.writeText(text);
+}
+function stopScan(scanner) {
+    fetch('/stop_scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({scan_type: scanner})
+    });
+    document.getElementById(scanner + '-output').innerText += "\n[Stopped]";
+}
+
+// Config Modal Logic
+document.getElementById("open-config-btn").onclick = function() {
+    fetchConfigAndFill();
+    document.getElementById("config-modal").style.display = "block";
+};
+document.getElementById("close-config").onclick = function() {
+    document.getElementById("config-modal").style.display = "none";
+};
+document.getElementById("save-config-btn").onclick = function(e) {
+    e.preventDefault();
+    const config = collectConfigFromFields();
+    fetch('/save_config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(config)
+    }).then(r => r.json())
+      .then(resp => {
+        document.getElementById('config-modal').style.display = 'none';
+      });
+};
+window.onclick = function(event) {
+    if (event.target == document.getElementById('config-modal')) {
+        document.getElementById('config-modal').style.display = "none";
+    }
+};
+
+function fetchConfigAndFill() {
+    fetch('/load_config')
+    .then(r => r.json())
+    .then(cfg => {
+        configCache = cfg;  // store for save
+        buildConfigModal(cfg);
+    });
+}
+
+function buildConfigModal(cfg) {
+    let form = document.getElementById('config-form');
+    form.innerHTML = '';
+    for (let scanner in cfg) {
+        if (!cfg[scanner] || typeof cfg[scanner] !== "object") continue;
+        let sec = document.createElement('div');
+        sec.className = "config-section";
+        let title = document.createElement('h3');
+        title.textContent = scanner.charAt(0).toUpperCase() + scanner.slice(1);
+        sec.appendChild(title);
+        let descs = cfg[scanner].description || {};
+        for (let key in cfg[scanner]) {
+            if(key === "description") continue;
+            let label = document.createElement('label');
+            let tip = '';
+            if(descs[key]) tip = `<span class="description-tip">${descs[key]}</span>`;
+            let v = cfg[scanner][key];
+            let input;
+            if(typeof v === "boolean") {
+                input = `<input type="checkbox" id="${scanner}_${key}" ${v ? "checked" : ""}>`;
+            } else if(Array.isArray(v)) {
+                input = `<input type="text" id="${scanner}_${key}" value="${v.join(', ')}">`;
+                tip += `<span class="description-tip">Comma-separated list</span>`;
+            } else {
+                input = `<input type="text" id="${scanner}_${key}" value="${v}">`;
+            }
+            label.innerHTML = `${tip}${key}: ${input}`;
+            sec.appendChild(label);
+        }
+        form.appendChild(sec);
+    }
+}
+
+function collectConfigFromFields() {
+    let cfg = JSON.parse(JSON.stringify(configCache));  // deep clone
+    for (let scanner in cfg) {
+        if (!cfg[scanner] || typeof cfg[scanner] !== "object") continue;
+        for (let key in cfg[scanner]) {
+            if(key === "description") continue;
+            let el = document.getElementById(scanner + '_' + key);
+            if (!el) continue;
+            if(typeof cfg[scanner][key] === "boolean") {
+                cfg[scanner][key] = el.checked;
+            } else if(Array.isArray(cfg[scanner][key])) {
+                cfg[scanner][key] = el.value.split(',').map(x => x.trim()).filter(x => x);
+            } else if(!isNaN(cfg[scanner][key])) {
+                cfg[scanner][key] = Number(el.value);
+            } else {
+                cfg[scanner][key] = el.value;
             }
         }
-        
-        function formatScanResult(result, scanType) {
-            if (result.error) return `[ERROR] ${result.error}`;
-            if (scanType === "nmap") {
-                let out = "";
-                if (result.results) {
-                    result.results.forEach(host => {
-                        out += `\n[${host.host}] (${host.status})\n`;
-                        host.open_ports.forEach(p =>
-                            out += `   [${p.port}] ${p.service} ${p.version}\n`);
-                    });
-                }
-                return out || "[No hosts found]";
-            }
-            if (scanType === "zap") {
-                if (!result.results || !result.results.alerts) return "[No alerts found]";
-                let out = "";
-                result.results.alerts.forEach(alert =>
-                    out += `[${alert.risk}] ${alert.alert} (${alert.cweid ? "CWE-" + alert.cweid : "No CWE"})\n   URL: ${alert.url}\n   Evidence: ${alert.evidence || "N/A"}\n`
-                );
-                return out || "[No alerts found]";
-            }
-            if (scanType === "nuclei") {
-                if (!result.results || !result.results.length) return "[No findings]";
-                let out = "";
-                result.results.forEach(r => {
-                    out += `[${r.templateID}] [${r.severity}] ${r.info ? r.info.name : ''}\nURL: ${r.host || r.url}\n\n`;
-                });
-                return out;
-            }
-            if (scanType === "nikto") {
-                return result.results || "[No findings]";
-            }
-            if (scanType === "amass") {
-                return result.results ? result.results.join("\n") : "[No subdomains found]";
-            }
-            return JSON.stringify(result, null, 2);
-        }
-        </script>
-        <script>
-            function fetchConfigAndFill() {
-                fetch('/load_config')
-                .then(r => r.json())
-                .then(cfg => {
-                    document.getElementById('nmap_args').value   = cfg.nmap.args;
-                    document.getElementById('nmap_timeout').value = cfg.nmap.timeout;
-                    document.getElementById('zap_timeout').value   = cfg.zap.timeout;
-                    document.getElementById('nuclei_args').value = cfg.nuclei.args;
-                    document.getElementById('nuclei_timeout').value = cfg.nuclei.timeout;
-                    document.getElementById('nikto_timeout').value = cfg.nikto.timeout;
-                    document.getElementById('amass_timeout').value = cfg.amass.timeout;
-                });
-            }
-            function collectConfigFromFields() {
-                return {
-                    nmap:   { args: document.getElementById('nmap_args').value, timeout: parseInt(document.getElementById('nmap_timeout').value) },
-                    zap:    { timeout: parseInt(document.getElementById('zap_timeout').value) },
-                    nuclei: { args: document.getElementById('nuclei_args').value, timeout: parseInt(document.getElementById('nuclei_timeout').value) },
-                    nikto:  { timeout: parseInt(document.getElementById('nikto_timeout').value) },
-                    amass:  { timeout: parseInt(document.getElementById('amass_timeout').value) }
-                };
-            }
-            
-            document.getElementById('open-config-btn').onclick = function() {
-                fetchConfigAndFill();
-                document.getElementById('config-modal').style.display = 'block';
-            };
-            document.getElementById('close-config').onclick = function() {
-                document.getElementById('config-modal').style.display = 'none';
-            };
-            document.getElementById('save-config-btn').onclick = function(e) {
-                e.preventDefault();
-                const config = collectConfigFromFields();
-                fetch('/save_config', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(config)
-                }).then(r => r.json())
-                  .then(resp => {
-                    document.getElementById('config-modal').style.display = 'none';
-                    // Optional: show toast message "Settings saved!"
-                  });
-            };
-            window.onclick = function(event) {
-                if (event.target == document.getElementById('config-modal')) {
-                    document.getElementById('config-modal').style.display = "none";
-                }
-            };
-            // On page load, fill config fields for user convenience
-            document.addEventListener('DOMContentLoaded', fetchConfigAndFill);
-        </script>            
+    }
+    return cfg;
+}
+
+function formatScanResult(result, scanType) {
+    if (result.error) return `[ERROR] ${result.error}`;
+    if (scanType === "nmap" || scanType === "nikto") {
+        return result.results || "[No results]";
+    }
+    if (scanType === "zap") {
+        if (!result.results || !result.results.alerts) return "[No alerts found]";
+        let out = "";
+        result.results.alerts.forEach(alert =>
+            out += `[${alert.risk}] ${alert.alert} (${alert.cweid ? "CWE-" + alert.cweid : "No CWE"})\n   URL: ${alert.url}\n   Evidence: ${alert.evidence || "N/A"}\n`
+        );
+        return out || "[No alerts found]";
+    }
+    if (scanType === "nuclei") {
+        if (!result.results || !result.results.length) return "[No findings]";
+        let out = "";
+        result.results.forEach(r => {
+            out += `[${r.templateID}] [${r.severity}] ${r.info ? r.info.name : ''}\nURL: ${r.host || r.url}\n\n`;
+        });
+        return out;
+    }
+    if (scanType === "amass") {
+        return result.results ? result.results.join("\n") : "[No subdomains found]";
+    }
+    return JSON.stringify(result, null, 2);
+}
+</script>
 </body>
 </html>

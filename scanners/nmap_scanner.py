@@ -1,25 +1,26 @@
-import nmap
+import subprocess
 
 def run_nmap_scan(target, scan_args):
-    scanner = nmap.PortScanner()
-    args = scan_args.get('args', '-sV -Pn -T4') if scan_args else '-sV -Pn -T4'
-    timeout = int(scan_args.get('timeout', 60)) if scan_args else 60
-    # Note: python-nmap doesn't support timeout directly, so you may want to run with subprocess for real timeouts.
-    scanner.scan(hosts=target, arguments=args)
-    results = []
-    for host in scanner.all_hosts():
-        host_info = {
-            'host': host,
-            'status': scanner[host].state(),
-            'open_ports': []
-        }
-        for proto in scanner[host].all_protocols():
-            ports = scanner[host][proto].keys()
-            for port in ports:
-                host_info['open_ports'].append({
-                    'port': port,
-                    'service': scanner[host][proto][port]['name'],
-                    'version': scanner[host][proto][port]['version']
-                })
-        results.append(host_info)
-    return {'scan_type': 'nmap', 'results': results}
+    args = ["nmap"]
+    # Build up arguments based on config
+    if scan_args.get("os_detection"):
+        args.append("-O")
+    if scan_args.get("service_version"):
+        args.append("-sV")
+    if scan_args.get("no_ping"):
+        args.append("-Pn")
+    if scan_args.get("aggressive"):
+        args.append("-A")
+    args.append(f"--top-ports={scan_args.get('top_ports', 100)}")
+    args.append(f"-T{scan_args.get('timing_template', 4)}")
+    if scan_args.get("custom_args"):
+        args.extend(scan_args.get("custom_args").split())
+    args.append(target)
+    timeout = int(scan_args.get("timeout", 60))
+    try:
+        proc = subprocess.run(args, capture_output=True, text=True, timeout=timeout)
+        return {"scan_type": "nmap", "results": proc.stdout}
+    except subprocess.TimeoutExpired:
+        return {"error": f"Nmap scan timed out after {timeout}s"}
+    except Exception as e:
+        return {"error": f"Nmap scan failed: {str(e)}"}
