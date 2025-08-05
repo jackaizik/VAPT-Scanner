@@ -44,6 +44,8 @@ def scan():
     scan_type = data.get('scan_type')
     target = data.get('target')
     config = load_config()
+    result_registry[scan_type] = None
+
     # Each scanner runs in a background process/thread for stop support
     def run_and_save():
         if scan_type == 'nmap':
