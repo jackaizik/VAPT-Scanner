@@ -1,8 +1,8 @@
-from multiprocessing import Process, Manager
+from multiprocessing import Process
 
-# Global manager for scan processes (by scanner type)
-manager = Manager()
-scan_registry = manager.dict()
+# Registry of active scan processes by scanner type. A normal dictionary is
+# sufficient since only the main application process interacts with it.
+scan_registry = {}
 
 def start_scan(scanner_type, func, *args):
     # Kill any previous scan

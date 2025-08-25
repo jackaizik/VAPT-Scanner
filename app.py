@@ -1,15 +1,20 @@
 from flask import Flask, request, render_template, jsonify
+from multiprocessing import Manager
 from scan_manager import start_scan, stop_scan
 from scanners.nmap_scanner import run_nmap_scan
 from scanners.zap_scanner import run_zap_scan
 from scanners.nuclei_scanner import run_nuclei_scan
 from scanners.nikto_scanner import run_nikto_scan
 from scanners.amass_scanner import run_amass_scan
-import json, os, threading, time
+import json, os
 
 app = Flask(__name__)
 CONFIG_PATH = 'args.conf'
-result_registry = {}
+
+# Use a multiprocessing manager dictionary so spawned processes can
+# communicate scan results back to the main application.
+manager = Manager()
+result_registry = manager.dict()
 
 def load_config():
     # Load or create with defaults
@@ -38,6 +43,28 @@ def home():
 def save_result(scanner_type, result):
     result_registry[scanner_type] = result
 
+
+def run_and_save(scan_type, target, config):
+    """Execute the appropriate scanner and store the result.
+
+    This function is designed to run in a separate process spawned via
+    ``start_scan``.  It updates ``result_registry`` so the main process can
+    retrieve the results asynchronously.
+    """
+    if scan_type == 'nmap':
+        result = run_nmap_scan(target, config.get('nmap', {}))
+    elif scan_type == 'zap':
+        result = run_zap_scan(target, config.get('zap', {}))
+    elif scan_type == 'nuclei':
+        result = run_nuclei_scan(target, config.get('nuclei', {}))
+    elif scan_type == 'nikto':
+        result = run_nikto_scan(target, config.get('nikto', {}))
+    elif scan_type == 'amass':
+        result = run_amass_scan(target, config.get('amass', {}))
+    else:
+        result = {"error": "Invalid scan type"}
+    save_result(scan_type, result)
+
 @app.route('/scan', methods=['POST'])
 def scan():
     data = request.get_json(force=True)
@@ -46,23 +73,10 @@ def scan():
     config = load_config()
     result_registry[scan_type] = None
 
-    # Each scanner runs in a background process/thread for stop support
-    def run_and_save():
-        if scan_type == 'nmap':
-            result = run_nmap_scan(target, config.get('nmap', {}))
-        elif scan_type == 'zap':
-            result = run_zap_scan(target, config.get('zap', {}))
-        elif scan_type == 'nuclei':
-            result = run_nuclei_scan(target, config.get('nuclei', {}))
-        elif scan_type == 'nikto':
-            result = run_nikto_scan(target, config.get('nikto', {}))
-        elif scan_type == 'amass':
-            result = run_amass_scan(target, config.get('amass', {}))
-        else:
-            result = {"error": "Invalid scan type"}
-        save_result(scan_type, result)
-    t = threading.Thread(target=run_and_save)
-    t.start()
+    # Start the scan in a background process so that it can be stopped via
+    # ``stop_scan``.  ``run_and_save`` will update ``result_registry`` when
+    # the scan finishes.
+    start_scan(scan_type, run_and_save, scan_type, target, config)
     return jsonify({"status": "started"})
 
 @app.route('/scan_status/<scanner_type>', methods=['GET'])
